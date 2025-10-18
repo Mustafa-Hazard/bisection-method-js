@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AxiomRoot • RootFinder Deluxe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjs@11.6.0/lib/browser/math.min.js"></script>
+  <style>
+    :root{
+      --bg:#f6f8fb; --card:#ffffff; --ink:#0b1020; --muted:#5b647c; --brand:#2563eb; --brand-2:#06b6d4;
+    }
+    body{ background: radial-gradient(1200px 600px at 0% -10%, #e6f0ff 0%, #f6f8fb 60%), var(--bg); color: var(--ink); }
+    .brand-grad{ background: linear-gradient(135deg, var(--brand), var(--brand-2)); }
+    .card{ background: var(--card); border:1px solid #e6e9f2; border-radius: 1rem; box-shadow: 0 10px 30px rgba(9,16,31,.06); }
+    .chip{ background:#f1f5f9; color:#334155; border-radius:9999px; padding:.25rem .6rem; font-size:.75rem; }
+    .display{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .btn{ transition: transform .08s ease, box-shadow .18s ease, background .18s ease; }
+    .btn:active{ transform: translateY(1px); }
+    .hover-raise:hover{ transform: translateY(-1px); box-shadow: 0 8px 16px rgba(3,7,18,.06); }
+    .fade-in{ animation: fade .3s ease-out both; }
+    @keyframes fade{ from{opacity:0; transform: translateY(6px);} to{opacity:1; transform: translateY(0);} }
+    .slide-up{ animation: slideup .35s ease-out both; }
+    @keyframes slideup{ from{opacity:0; transform: translateY(10px);} to{opacity:1; transform: translateY(0);} }
+    .table-sticky thead{ position: sticky; top:0; z-index:1; }
+    .spinner{ width:36px; height:36px; border:3px solid #e2e8f0; border-top-color:#3b82f6; border-radius:9999px; animation: spin 1s linear infinite; }
+    @keyframes spin{ to{ transform: rotate(360deg);} }
+    .tip{ position:relative; }
+    .tipbox{ position:absolute; left:0; top: calc(100% + .4rem); background:#0b1020; color:#e5e7eb; border:1px solid #1f2937; border-radius:.5rem; padding:.45rem .6rem; font-size:.75rem; white-space:nowrap; opacity:0; transform: translateY(4px); pointer-events:none; transition:.18s ease; }
+    .tip:hover .tipbox{ opacity:1; transform: translateY(0); }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Top Bar -->
+  <header class="bg-white/90 backdrop-blur border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl brand-grad flex items-center justify-center text-white font-bold">AR</div>
+        <div>
+          <h1 class="text-xl font-extrabold tracking-tight">AxiomRoot <span class="text-slate-400 text-sm font-medium">• RootFinder Deluxe</span></h1>
+          <p class="text-[11px] text-slate-500 -mt-1">Created by <span class="font-semibold text-slate-700">Mustafa Muhammad</span></p>
+        </div>
+      </div>
+      <button id="themeToggle" class="btn hover-raise px-3 py-2 rounded-lg border border-slate-200 text-slate-700">🌙 Dark mode</button>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="grid lg:grid-cols-3 gap-6">
+      <!-- Console -->
+      <section class="card p-5 fade-in">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-semibold">Function Console</h2>
+          <span class="chip">Radians • ln = natural, log = base-10</span>
+        </div>
+        <!-- Expression -->
+        <div class="mb-3">
+          <div class="flex gap-2">
+            <label class="sr-only" for="expr">Function f(x)</label>
+            <input id="expr" class="flex-1 display bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-4 focus:ring-blue-100" placeholder="e.g., x^3-2*x-5" />
+            <button id="clearExpr" class="btn hover-raise px-3 rounded-xl bg-slate-900 text-white">Clear</button>
+          </div>
+        </div>
+        <!-- Keypad -->
+        <div class="grid grid-cols-5 gap-2 text-sm select-none">
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="sin(">sin</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="cos(">cos</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="tan(">tan</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" title="ln(x)" data-insert="log(">ln</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" title="log10(x)" data-insert="log10(">log</button>
+
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="pi">π</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="e">e</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="x">x</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="(">(</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert=")">)</button>
+
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="7">7</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="8">8</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="9">9</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="^">^</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="," title="comma">,</button>
+
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="4">4</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="5">5</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="6">6</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="*">×</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="/">÷</button>
+
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="1">1</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="2">2</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="3">3</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="+">+</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert="-">−</button>
+
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2 col-span-2" data-insert="0">0</button>
+          <button class="btn hover-raise bg-slate-100 rounded-lg py-2" data-insert=".">.</button>
+          <button id="backspace" class="btn hover-raise bg-slate-100 rounded-lg py-2">⌫</button>
+          <button id="insAbs" class="btn hover-raise bg-slate-100 rounded-lg py-2" title="abs(x)">|x|</button>
+        </div>
+
+        <!-- Quick examples -->
+        <div class="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <p class="text-sm text-slate-700 mb-2">Quick inserts</p>
+          <div class="flex flex-wrap gap-2">
+            <button class="btn hover-raise text-xs px-2 py-1 rounded bg-white border border-slate-200" data-example="x^3-2*x-5">x^3 - 2*x - 5</button>
+            <button class="btn hover-raise text-xs px-2 py-1 rounded bg-white border border-slate-200" data-example="sin(x)-0.5">sin(x) - 0.5</button>
+            <button class="btn hover-raise text-xs px-2 py-1 rounded bg-white border border-slate-200" data-example="log10(x)-2">log10(x) - 2</button>
+            <button class="btn hover-raise text-xs px-2 py-1 rounded bg-white border border-slate-200" data-example="log(x)-1">ln(x) - 1</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Parameters & Output -->
+      <section class="lg:col-span-2 space-y-6">
+        <!-- Parameters -->
+        <div class="card p-5 slide-up">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold">Parameters</h2>
+            <span class="text-xs text-slate-500">Tooltips on labels</span>
+          </div>
+          <div class="grid md:grid-cols-5 gap-3">
+            <label class="tip block" for="a">
+              <span class="text-xs text-slate-600">Lower bound (a)</span>
+              <input id="a" type="number" step="any" placeholder="1" class="w-full mt-1 px-3 py-2 rounded-xl bg-white border border-slate-200 focus:outline-none focus:ring-4 focus:ring-blue-100" />
+              <span class="tipbox">Pick a so f(a) and f(b) have opposite signs</span>
+            </label>
+            <label class="tip block" for="b">
+              <span class="text-xs text-slate-600">Upper bound (b)</span>
+              <input id="b" type="number" step="any" placeholder="3" class="w-full mt-1 px-3 py-2 rounded-xl bg-white border border-slate-200 focus:outline-none focus:ring-4 focus:ring-blue-100" />
+              <span class="tipbox">b must be greater than a</span>
+            </label>
+            <label class="tip block" for="tol">
+              <span class="text-xs text-slate-600">Tolerance</span>
+              <input id="tol" type="number" min="0" step="0.0000000001" value="0.0001" class="w-full mt-1 px-3 py-2 rounded-xl bg-white border border-slate-200 focus:outline-none focus:ring-4 focus:ring-blue-100" />
+              <span class="tipbox">Stop when error ≤ tolerance</span>
+            </label>
+            <label class="tip block" for="maxit">
+              <span class="text-xs text-slate-600">Max iterations</span>
+              <input id="maxit" type="number" min="1" step="1" value="1000" class="w-full mt-1 px-3 py-2 rounded-xl bg-white border border-slate-200 focus:outline-none focus:ring-4 focus:ring-blue-100" />
+              <span class="tipbox">Safety cap</span>
+            </label>
+            <div class="flex items-end">
+              <button id="calc" class="btn hover-raise w-full py-3 rounded-xl text-white brand-grad">Calculate</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div id="summaryCard" class="hidden card p-5 slide-up">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold">Results</h3>
+            <span id="iterCount" class="chip">0 iterations</span>
+          </div>
+          <div class="grid sm:grid-cols-3 gap-3">
+            <div class="rounded-xl border border-slate-200 p-4 bg-white">
+              <p class="text-[11px] text-slate-500">Root</p>
+              <p id="rootVal" class="display text-2xl text-slate-900"></p>
+            </div>
+            <div class="rounded-xl border border-slate-200 p-4 bg-white">
+              <p class="text-[11px] text-slate-500">f(root)</p>
+              <p id="fRoot" class="display text-2xl text-slate-900"></p>
+            </div>
+            <div class="rounded-xl border border-slate-200 p-4 bg-white">
+              <p class="text-[11px] text-slate-500">Final Error</p>
+              <p id="errVal" class="display text-2xl text-slate-900"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div id="tableCard" class="hidden card p-5 slide-up">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold">Iteration Details</h3>
+            <button id="collapseTable" class="btn hover-raise px-3 py-1 rounded-lg border border-slate-200">Collapse</button>
+          </div>
+          <div class="max-h-[420px] overflow-auto rounded-xl border border-slate-200 table-sticky">
+            <table class="min-w-full text-sm">
+              <thead class="bg-slate-50 text-slate-700">
+                <tr>
+                  <th class="text-left px-3 py-2">Iter</th>
+                  <th class="text-left px-3 py-2">a</th>
+                  <th class="text-left px-3 py-2">b</th>
+                  <th class="text-left px-3 py-2">c</th>
+                  <th class="text-left px-3 py-2">f(c)</th>
+                  <th class="text-left px-3 py-2">Error</th>
+                </tr>
+              </thead>
+              <tbody id="tbody" class="divide-y divide-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Loader -->
+        <div id="loader" class="hidden fixed inset-0 bg-black/25 backdrop-blur-sm flex items-center justify-center z-50">
+          <div class="card p-6 flex items-center gap-3">
+            <div class="spinner"></div>
+            <p class="text-slate-700">Computing…</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="mt-8 text-center text-xs text-slate-500">© AxiomRoot — High-end bisection tool by <span class="text-slate-700 font-medium">Mustafa Muhammad</span></footer>
+  </main>
+
+  <script>
+    // ===== Helpers
+    const $ = (id) => document.getElementById(id);
+    function insertAtCursor(el, text){
+      const s = el.selectionStart ?? el.value.length; const e = el.selectionEnd ?? el.value.length;
+      el.value = el.value.slice(0,s) + text + el.value.slice(e);
+      const p = s + text.length; el.setSelectionRange(p,p); el.focus();
+    }
+    function formatDecimal(v){ if(!isFinite(v)) return String(v); return Number.parseFloat(Number(v).toFixed(10)); }
+
+    // ===== Theme toggle (button shows the NEXT action)
+    const themeBtn = $('themeToggle');
+    const savedTheme = localStorage.getItem('axiom-theme') || 'light';
+    setTheme(savedTheme);
+    themeBtn.addEventListener('click', () => {
+      const next = (document.documentElement.dataset.theme === 'light') ? 'dark' : 'light';
+      setTheme(next);
+    });
+    function setTheme(mode){
+      document.documentElement.dataset.theme = mode;
+      document.body.style.background = (mode==='dark') ? '#0b1020' : '';
+      document.body.classList.toggle('dark', mode==='dark');
+      themeBtn.textContent = (mode === 'light') ? '🌙 Dark mode' : '☀️ Light mode';
+      localStorage.setItem('axiom-theme', mode);
+    }
+
+    // ===== Keypad & examples
+    const exprEl = $('expr');
+    document.querySelectorAll('[data-insert]').forEach(b=> b.addEventListener('click', ()=> insertAtCursor(exprEl, b.dataset.insert)));
+    $('backspace').addEventListener('click', ()=>{
+      const s=exprEl.selectionStart??exprEl.value.length; const e=exprEl.selectionEnd??exprEl.value.length;
+      if(s!==e){ exprEl.value = exprEl.value.slice(0,s)+exprEl.value.slice(e); exprEl.setSelectionRange(s,s);}
+      else if(s>0){ exprEl.value = exprEl.value.slice(0,s-1)+exprEl.value.slice(s); exprEl.setSelectionRange(s-1,s-1);}
+      exprEl.focus();
+    });
+    $('insAbs').addEventListener('click', ()=> insertAtCursor(exprEl, 'abs('));
+    $('clearExpr').addEventListener('click', ()=>{ exprEl.value=''; exprEl.focus(); });
+    document.querySelectorAll('[data-example]').forEach(b=> b.addEventListener('click', ()=>{ exprEl.value=b.dataset.example; exprEl.focus(); }));
+
+    // ===== Collapse/Expand table text toggle
+    $('collapseTable').addEventListener('click', ()=>{
+      const card = $('tableCard');
+      card.classList.toggle('hidden');
+      $('collapseTable').textContent = card.classList.contains('hidden') ? 'Expand' : 'Collapse';
+    });
+
+    // ===== Bisection core
+    function bisection(fn, a, b, tol, maxit){
+      let fa = fn.evaluate({x:a}); let fb = fn.evaluate({x:b});
+      if (Number.isNaN(fa) || Number.isNaN(fb)) throw new Error('f(a) or f(b) is NaN');
+      let iterations = []; let c=a, fc=fa, err=Math.abs(b-a); let n=0;
+      while(err>tol && n<maxit){
+        n++; c=(a+b)/2; fc=fn.evaluate({x:c}); err=(b-a)/2;
+        iterations.push({n,a,b,c,fc,err});
+        if(fa*fc<0){ b=c; fb=fc; } else { a=c; fa=fc; }
+      }
+      return { root:c, froot:fc, err, iterations };
+    }
+
+    // ===== Calculate click handler
+    $('calc').addEventListener('click', ()=>{
+      const funcStr = exprEl.value.trim();
+      const a = parseFloat($('a').value); const b = parseFloat($('b').value);
+      const tol = parseFloat($('tol').value); const maxit = parseInt($('maxit').value||'1000',10);
+      if(!funcStr || Number.isNaN(a) || Number.isNaN(b) || Number.isNaN(tol) || Number.isNaN(maxit)) {
+        alert('Please provide f(x), a, b, tolerance, and max iterations.');
+        return;
+      }
+      if(a>=b){ alert('Require a < b.'); return; }
+      $('loader').classList.remove('hidden');
+      setTimeout(()=>{
+        try{
+          const fn = math.compile(funcStr);
+          const fa = fn.evaluate({x:a}); const fb = fn.evaluate({x:b});
+          if (!isFinite(fa) || !isFinite(fb) || Number.isNaN(fa) || Number.isNaN(fb)) throw new Error('f(a) or f(b) not finite');
+          if (fa*fb >= 0){ alert('Need f(a) and f(b) with opposite signs.'); $('loader').classList.add('hidden'); return; }
+          const res = bisection(fn,a,b,tol,maxit);
+          renderResults(res);
+        }catch(e){ alert('Invalid expression. '+e.message); }
+        $('loader').classList.add('hidden');
+      }, 60);
+    });
+
+    // ===== Render
+    function renderResults(res){
+      $('summaryCard').classList.remove('hidden');
+      $('tableCard').classList.remove('hidden');
+      $('rootVal').textContent = formatDecimal(res.root);
+      $('fRoot').textContent = formatDecimal(res.froot);
+      $('errVal').textContent = formatDecimal(res.err);
+      $('iterCount').textContent = `${res.iterations.length} iterations`;
+
+      const tbody = $('tbody'); tbody.innerHTML='';
+      for(const it of res.iterations){
+        const tr = document.createElement('tr');
+        tr.className = 'odd:bg-white even:bg-slate-50';
+        tr.innerHTML = `
+          <td class="px-3 py-2">${it.n}</td>
+          <td class="px-3 py-2">${formatDecimal(it.a)}</td>
+          <td class="px-3 py-2">${formatDecimal(it.b)}</td>
+          <td class="px-3 py-2 font-medium text-blue-700">${formatDecimal(it.c)}</td>
+          <td class="px-3 py-2">${formatDecimal(it.fc)}</td>
+          <td class="px-3 py-2">${formatDecimal(it.err)}</td>`;
+        tbody.appendChild(tr);
+      }
+      document.getElementById('summaryCard').scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  </script>
+</body>
+</html>
